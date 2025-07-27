@@ -1,0 +1,12 @@
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.tiff
+*.bmp
+*.gif
+*.pdf
+*.txt
+
+
+venv/
