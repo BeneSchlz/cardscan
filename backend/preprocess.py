@@ -1,43 +1,46 @@
 import cv2
-import numpy as np
 import sys
 import os
 
-def preprocess_image(input_path):
-    # Load image
-    img = cv2.imread(input_path)
-    if img is None:
-        print("ERROR: Cannot read image:", input_path)
-        return None
+def preprocess_image(image_path):
+    # Load the image
+    image = cv2.imread(image_path)
+    if image is None:
+        print(f"Could not read image: {image_path}")
+        return
+
+    # Rotate if height > width
+    h, w = image.shape[:2]
+    if h > w:
+        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
 
     # Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Blur to reduce noise
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    # Apply Gaussian Blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (3, 3), 0)
 
-    # Binarize using Otsu’s thresholding
-    _, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # Apply adaptive thresholding for better contrast
+    thresh = cv2.adaptiveThreshold(
+        blurred,
+        255,
+        cv2.ADAPTIVE_THRESH_MEAN_C,
+        cv2.THRESH_BINARY,
+        15,
+        10
+    )
 
-    # Optional: Sharpen
-    kernel = np.array([[0, -1, 0],
-                       [-1, 5, -1],
-                       [0, -1, 0]])
-    sharpened = cv2.filter2D(thresh, -1, kernel)
+    # Output path
+    base = os.path.splitext(image_path)[0]
+    output_path = f"{base}_preprocessed.png"
 
-    # Optional: Denoise
-    denoised = cv2.medianBlur(sharpened, 3)
-
-    # Save as .png
-    base_name = os.path.splitext(input_path)[0]
-    output_path = base_name + "_preprocessed.png"
-    cv2.imwrite(output_path, denoised)
-
-    print(output_path)  # You can read this in Go
-    return output_path
+    # Save result
+    cv2.imwrite(output_path, thresh)
+    print(f"Saved preprocessed image to: {output_path}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python preprocess.py input.jpg")
-    else:
-        preprocess_image(sys.argv[1])
+        print("Usage: python preprocess.py image_path")
+        sys.exit(1)
+
+    preprocess_image(sys.argv[1])
