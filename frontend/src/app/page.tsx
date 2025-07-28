@@ -108,15 +108,15 @@ export default function OCRConverter() {
     })
     formData.append("language", selectedLanguage)
 
-    try {
-      const response = await fetch("http://localhost:8080/api/ocr", {
-        method: "POST",
-        body: formData,
-      })
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ocr`, {
+      method: "POST",
+      body: formData,
+    })
 
-      if (!response.ok) {
-        throw new Error("OCR processing failed")
-      }
+    if (!response.ok) {
+      throw new Error("OCR processing failed")
+    }
 
       const results = await response.json()
 
