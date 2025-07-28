@@ -42,3 +42,8 @@ pnpm-debug.log*
 *.tgz
 
 .vercel/
+
+/server
+
+__pycache__/
+*.pyc

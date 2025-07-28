@@ -13,7 +13,8 @@ func main() {
 	mux.HandleFunc("/api/ocr", OCRHandler)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Your frontend
+		AllowedOrigins: []string{"http://localhost:3000",
+			"https://cardscan-three.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
