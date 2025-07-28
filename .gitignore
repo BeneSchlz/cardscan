@@ -8,22 +8,19 @@
 *.pdf
 *.txt
 
-
 venv/
-
+__pycache__/
+*.pyc
 
 node_modules/
-
 .next/
 out/
 dist/
 .turbo/
 .cache/
-
 *.tsbuildinfo
 
 .env
-.env.local
 .env.*.local
 
 npm-debug.log*
@@ -33,9 +30,7 @@ pnpm-debug.log*
 
 .idea/
 *.swp
-
 .DS_Store
-
 *.bak
 *.old
 *.orig
@@ -43,7 +38,4 @@ pnpm-debug.log*
 
 .vercel/
 
-/server
-
-__pycache__/
-*.pyc
+server

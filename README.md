@@ -1,9 +1,9 @@
 # CardScan
 CardScan is a simple web app that extracts text from handwritten images using Tesseract OCR. It converts handwritten note cards (e.g., index cards) into editable text that can be downloaded as Markdown files.
 
-**OCR results are still inconsistent and often inaccurate, especially with poor image quality or cursive writing**
+**Note: OCR results are still inconsistent and often inaccurate, especially with poor image quality or cursive writing**
 
-The Live Demo is found on (https://cardscan-three.vercel.app/)
+Live Demo: (https://cardscan-three.vercel.app/)
 
 ## What It Does
 - Upload one or multiple handwritten images
@@ -61,8 +61,23 @@ cd cardscan
 ```bash
 cd frontend
 npm install
+```
+**Create a .env file in the frontend/ directory**
+```bash
+touch .env
+```
+**Add the following line to .env (for local development):**
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
+
+**Then run the development server:**
+
+```bash
 npm run dev
 ```
+
 
 ### Backend
 ```bash
