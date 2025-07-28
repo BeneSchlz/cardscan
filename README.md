@@ -49,6 +49,13 @@ If you use this project in production or commercially, ensure compliance with th
 
 ## Setup
 
+### Clone the repository
+
+```bash
+git clone https://github.com/BeneSchlz/cardscan.git
+cd cardscan
+```
+
 ### Frontend
 
 ```bash
