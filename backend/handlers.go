@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -49,62 +50,57 @@ func processFile(file io.Reader, filename, lang, format string) (OCRResponse, er
 }
 
 func OCRHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	if r.Method != http.MethodPost {
-		respondWithError(w, http.StatusMethodNotAllowed, "Only POST allowed")
+		http.Error(w, "Only POST method is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Error parsing form")
+	err := r.ParseMultipartForm(32 << 20) // 32MB
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
 
-	lang := r.FormValue("lang")
-	if lang == "" {
-		lang = "eng"
-	}
-	format := r.FormValue("format")
-	if format == "" {
-		format = "md"
+	lang := r.FormValue("language")
+	files := r.MultipartForm.File["files"]
+
+	type OCRResult struct {
+		FileName string `json:"fileName"`
+		Text     string `json:"text"`
 	}
 
-	var responses []OCRResponse
+	var results []OCRResult
 
-	// First try single file field: "image"
-	if file, handler, err := r.FormFile("image"); err == nil {
-		defer file.Close()
-		resp, err := processFile(file, handler.Filename, lang, format)
+	for _, fileHeader := range files {
+		file, err := fileHeader.Open()
 		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, err.Error())
+			http.Error(w, "Could not open uploaded file", http.StatusBadRequest)
 			return
 		}
-		responses = append(responses, resp)
-	} else {
-		// Fallback to multiple files under "images"
-		files := r.MultipartForm.File["images"]
-		if len(files) == 0 {
-			respondWithError(w, http.StatusBadRequest, "No image or images field provided")
-			return
-		}
-		for _, fileHeader := range files {
-			f, err := fileHeader.Open()
-			if err != nil {
-				respondWithError(w, http.StatusInternalServerError, "Failed to open uploaded file")
-				return
-			}
-			defer f.Close()
+		defer file.Close()
 
-			resp, err := processFile(f, fileHeader.Filename, lang, format)
-			if err != nil {
-				respondWithError(w, http.StatusInternalServerError, err.Error())
-				return
-			}
-			responses = append(responses, resp)
+		tempDir := os.TempDir()
+		tempPath := filepath.Join(tempDir, fileHeader.Filename)
+		out, err := os.Create(tempPath)
+		if err != nil {
+			http.Error(w, "Could not create temp file", http.StatusInternalServerError)
+			return
 		}
+		defer out.Close()
+		io.Copy(out, file)
+
+		text, err := RunTesseract(tempPath, lang)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("OCR failed for %s: %v", fileHeader.Filename, err), http.StatusInternalServerError)
+			return
+		}
+
+		results = append(results, OCRResult{
+			FileName: fileHeader.Filename,
+			Text:     text,
+		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(responses)
+	json.NewEncoder(w).Encode(results)
 }

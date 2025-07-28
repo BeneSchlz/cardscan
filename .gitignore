@@ -10,3 +10,35 @@
 
 
 venv/
+
+
+node_modules/
+
+.next/
+out/
+dist/
+.turbo/
+.cache/
+
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+.idea/
+*.swp
+
+.DS_Store
+
+*.bak
+*.old
+*.orig
+*.tgz
+
+.vercel/
